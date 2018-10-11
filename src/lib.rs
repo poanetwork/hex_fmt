@@ -40,9 +40,9 @@ impl<T: AsRef<[u8]>> Display for HexFmt<T> {
 
 impl<T: AsRef<[u8]>> LowerHex for HexFmt<T> {
     fn fmt(&self, f: &mut Formatter) -> Result {
+        // TODO: Respect `f.width()`, `f.align()` and `f.fill()`.
         let precision = f.precision().unwrap_or(DEFAULT_PRECISION);
         let bytes = self.0.as_ref();
-        // TODO: Respect `f.width()`, `f.align()` and `f.fill()`.
 
         // If the array is short enough, don't shorten it.
         if 2 * bytes.len() <= precision {
@@ -50,6 +50,11 @@ impl<T: AsRef<[u8]>> LowerHex for HexFmt<T> {
                 write!(f, "{:02x}", byte)?;
             }
             return Ok(());
+        }
+
+        // If the bytes don't fit and the ellipsis fills the maximum width, print only that.
+        if precision <= ELLIPSIS.len() {
+            return write!(f, "{:.*}", precision, ELLIPSIS);
         }
 
         // Compute the number of hex digits to display left and right of the ellipsis.
@@ -110,5 +115,18 @@ where
     fn fmt(&self, f: &mut Formatter) -> Result {
         let entries = self.0.clone().into_iter().map(HexFmt);
         f.debug_list().entries(entries).finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HexFmt;
+
+    #[test]
+    fn test_fmt() {
+        assert_eq!("", &format!("{:.0}", HexFmt(&[0x01])));
+        assert_eq!(".", &format!("{:.1}", HexFmt(&[0x01])));
+        assert_eq!("01", &format!("{:.2}", HexFmt(&[0x01])));
+        assert_eq!("..", &format!("{:.2}", HexFmt(&[0x01, 0x23])));
     }
 }
