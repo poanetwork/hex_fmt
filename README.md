@@ -1,5 +1,8 @@
 # Formatting and shortening byte slices as hexadecimal strings
 
+[![crates.io](https://img.shields.io/crates/v/hex_fmt.svg)](https://crates.io/crates/hex_fmt)
+[![Documentation](https://docs.rs/hex_fmt/badge.svg)](https://docs.rs/hex_fmt)
+
 This crate provides wrappers for byte slices and lists of byte slices that implement the
 standard formatting traits and print the bytes as a hexadecimal string. It respects the
 alignment, width and precision parameters and applies padding and shortening.
